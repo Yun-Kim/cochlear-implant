@@ -13,26 +13,26 @@ bank9 = process_signal('N:\252\bothBothClear.wav');
 % bank13 = process_signal('N:\252\animals.wav');
 
 function f = process_signal(filename)
-    %Task 3.1: Read files and find sampling rate    
+    %Step 3.1: Read files and find sampling rate    
     [signal,Fs] = audioread(filename);
     info = audioinfo(filename);
-    %Task 3.2: convert to mono
+    %Step 3.2: convert to mono
     if info.NumChannels == 2
         signal = sum(signal, 2);
     end
-    %Task 3.3: Play sound
+    %Step 3.3: Play sound
     %sound(signal, Fs);
-    %Task 3.6: Resample to 16 KHz
+    %Step 3.6: Resample to 16 KHz
     if info.SampleRate ~= 16000
         [p,q]=rat(16000/info.SampleRate);
         signal = resample(signal, p, q);
     end
-    %Task 3.4: Write sound to new find
+    %Step 3.4: Write sound to new find
     new_name = strcat('new-',erase(filename, "N:\252\"));
 %     audiowrite(new_name, signal, 16000);
     info = audioinfo(new_name);
     
-    %Task 3.5: Plot  waveform of sound files as function of sample number
+    %Step 3.5: Plot  waveform of sound files as function of sample number
 %         figure
 %         plot(signal);
 %         title(new_name);
@@ -43,7 +43,7 @@ function f = process_signal(filename)
 %         fm = 1000;
 %         d = info.Duration/info.TotalSamples;
 %         x = 0: d :info.Duration;
-    %Task 3.7: Generate cosine function
+    %Step 3.7: Generate cosine function
 %         whole_cos = cos(2*pi*fm*x);
 %         t = 0: d :0.002;
 %         y =cos(2*pi*fm*t);
@@ -54,7 +54,7 @@ function f = process_signal(filename)
 %         xlabel('time (s)');
 %         ylabel('Output Signal');
 
-    %Task 4: Designed bank of passband filters
+    %Step 4: Designed bank of passband filters
     passband_bank = zeros(length(signal), 16);
     
     number_channels = 16;
@@ -63,13 +63,13 @@ function f = process_signal(filename)
     upper_cutoffs = [180, 280, 380, 480, 580, 680, 780, 880, 980, 1480, 1980, ...
         2480, 3480, 4980, 6480, 7975];
 
-    %Task 5: Filter sound with passband bank
+    %Step 5: Filter sound with passband bank
     for i=1:number_channels
         filter_function = butter(lower_cutoffs(i), upper_cutoffs(i));
         passband_bank(:, i) = filter(filter_function, signal);
     end
     
-    %Task 6: Plot output signals of lowest and highest frequency channels
+    %Step 6: Plot output signals of lowest and highest frequency channels
 %     figure
 %     plot(kaiser_bank(:, 1));
 %     title("Lowest Frequency Channel");
@@ -83,19 +83,19 @@ function f = process_signal(filename)
 %     ylabel('Signal');
     
     
-    % Task 7: Envelop extraction step 1: Rectify the output signal of all
+    % Step 7: Envelop extraction step 1: Rectify the output signal of all
     % bandpass filters
     [rows, cols] = size(passband_bank);
     rectified_channels = abs(passband_bank); 
     envelopes = zeros(length(signal), number_channels);    
   
-%     Task 8: Envelop extraction step 2: Detect envelopes of all rectified
+%     Step 8: Envelop extraction step 2: Detect envelopes of all rectified
 %     signals usig lowpass filter with 400 Hz cutoff
     for i=1:cols
         envelopes(:, i) = filter(envelope, rectified_channels(:, i));
     end
     
-%     Task 9: Plot envelope of lowest and highest frequency channels
+%     Step 9: Plot envelope of lowest and highest frequency channels
     
 %     figure
 %     plot(envelopes(:, 1));
@@ -109,7 +109,7 @@ function f = process_signal(filename)
 %     xlabel('Sample Number');
 %     ylabel('Signal');
 
-    %Task 10: Cosine signal
+    %Step 10: Cosine signal
     cosine_signals = zeros(length(signal), number_channels);
     center_f = zeros(number_channels, 1);
 
@@ -120,18 +120,18 @@ function f = process_signal(filename)
         cosine_signals(:,i) = cos(2*pi*center_f(i)*x);
     end
     
-    %Task 11: Amplitude modulation
+    %Step 11: Amplitude modulation
     for i=1:number_channels
        signals = cosine_signals.*envelopes; 
     end
     
-    %Task 12: Add up into output signal
+    %Step 12: Add up into output signal
     output = zeros(length(signal), 1);
     for i=1:number_channels
        output = output + signals(:, i);
     end
     
-    %Task 13: Play output sound
+    %Step 13: Play output sound
     sound(output, 16000);
     new_name = strcat('Butterworth-output-', erase(filename, "N:\252\"));
     audiowrite(new_name, output, 16000);
